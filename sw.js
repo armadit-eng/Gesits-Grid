@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gesits-dashboard-v2';
+'gesits-dashboard-v3'ts-dashboard-v2'ts-dashboard-v2' CACHE_NAME = 'gesits-dashboard-v2';
 const ASSETS = [
   './',
   './index.html',

@@ -1,4 +1,4 @@
-'gesits-dashboard-v3'ts-dashboard-v2'ts-dashboard-v2' CACHE_NAME = 'gesits-dashboard-v2';
+'gesits-dashboard-v3'ts-dashboard-v3'ts-dashboard-v3' CACHE_NAME = 'gesits-dashboard-v3';
 const ASSETS = [
   './',
   './index.html',

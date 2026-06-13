@@ -91,16 +91,48 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .speedo-unit{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:1px}
 
 /* ── BATTERY VIEW ── */
-.batt-hero{background:linear-gradient(135deg,#00c853 0%,#00bcd4 100%);border-radius:16px;margin:13px 14px 0;padding:18px 18px 16px;text-align:center}
-.batt-hero-pct{font-family:'Rajdhani',sans-serif;font-size:46px;font-weight:700;color:#fff;line-height:1}
-.batt-bar-track{background:rgba(0,0,0,0.2);border-radius:8px;height:10px;margin:10px 0 6px;overflow:hidden}
-.batt-bar-fill{background:#fff;height:100%;border-radius:8px;transition:width .5s ease}
-.batt-hero-sub{font-size:11px;color:rgba(255,255,255,0.85);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.batt-hero{background:var(--card);border:1px solid var(--border);border-radius:16px;margin:13px 14px 0;padding:20px 18px 16px;text-align:center}
+.batt-icon-svg{width:90px;height:160px;margin-bottom:10px}
+.batt-hero-pct{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;color:var(--text);line-height:1}
+.batt-hero-sub{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
 .batt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px 14px 14px}
 .batt-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
 .batt-icon{font-size:22px;margin-bottom:6px}
 .batt-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .batt-val{font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700}
+
+/* ── ENERGY / RANGE CARD ── */
+.energy-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 16px;margin:0 14px 12px}
+.energy-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.energy-row+.energy-row{border-top:1px solid var(--border)}
+.energy-label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.energy-val{font-size:15px;font-weight:700;font-family:'Rajdhani',sans-serif}
+
+/* ── LIGHT THEME ── */
+body.light{
+  --bg:#f4f6f9;--bg2:#ffffff;--bg3:#eef1f5;
+  --card:#ffffff;--card2:#eef1f5;
+  --text:#1a1f2b;--muted:#6b7480;--border:#e1e7ee;
+}
+body.light .moto-hero{background:linear-gradient(160deg,#eef1f5 0%,#f4f6f9 60%)}
+body.light .moto-hero::before{background:radial-gradient(circle,rgba(255,61,61,.06) 0%,transparent 70%)}
+body.light .ble-log{box-shadow:none}
+
+/* ── TRIP HISTORY SCREEN ── */
+.trip-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+.trip-item-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.trip-item-date{font-size:11px;color:var(--muted);font-weight:600}
+.trip-item-share{font-size:11px;color:var(--green);cursor:pointer;font-weight:600}
+.trip-item-dist{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:8px}
+.trip-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
+.trip-item-lbl{color:var(--muted);margin-right:4px}
+
+/* ── FAVORITE STAR BTN ── */
+.dest-fav-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:9px;width:32px;height:32px;cursor:pointer;flex-shrink:0;font-size:15px;display:flex;align-items:center;justify-content:center}
+
+/* ── CHARGING MARKER ── */
+.charging-marker{font-size:22px;filter:drop-shadow(0 0 4px rgba(0,230,118,0.8));cursor:pointer}
+
 
 /* ── ERROR STATUS FULLSCREEN ── */
 .err-screen{display:none;position:fixed;inset:0;z-index:150;background:var(--bg);flex-direction:column;max-width:430px;margin:0 auto}
@@ -342,6 +374,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div class="stat-sub" id="spdSub">SPD: — km/h · ODO: — km</div>
     </div>
   </div>
+  <div class="energy-card">
+    <div class="energy-row"><div class="energy-label">⚡ Sisa Energi</div><div class="energy-val" id="energyVal">— Wh</div></div>
+    <div class="energy-row"><div class="energy-label">🛣️ Estimasi Jarak Tersisa</div><div class="energy-val" id="rangeVal" style="color:var(--green)">— km</div></div>
+    <div class="energy-row"><div class="energy-label">📊 Efisiensi</div><div class="energy-val" id="effVal" style="font-size:12px;font-weight:500;color:var(--muted)">— Wh/km</div></div>
+  </div>
   <div class="action-row">
     <div class="action-btn" onclick="switchTab('diagnosis',document.querySelectorAll('.tab')[1])"><span>🔧</span> Diagnosis <span class="arrow">›</span></div>
     <div class="action-btn" onclick="switchTab('navigasi',document.querySelectorAll('.tab')[2])"><span>📍</span> Navigasi <span class="arrow">›</span></div>
@@ -418,9 +455,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <!-- BATTERY VIEW -->
   <div id="viewBattery" style="display:none;overflow-y:auto">
     <div class="batt-hero">
+      <svg class="batt-icon-svg" viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- terminal -->
+        <rect x="38" y="2" width="24" height="12" rx="3" fill="var(--border)"/>
+        <!-- body outline -->
+        <rect x="6" y="14" width="88" height="164" rx="12" fill="none" stroke="var(--border)" stroke-width="4"/>
+        <!-- fill clip -->
+        <clipPath id="battClip"><rect x="6" y="14" width="88" height="164" rx="12"/></clipPath>
+        <rect id="battFillRect" x="6" y="178" width="88" height="0" fill="var(--muted)" clip-path="url(#battClip)" style="transition:height .6s ease, y .6s ease, fill .6s ease"/>
+      </svg>
       <div class="batt-hero-pct" id="battHeroPct">— %</div>
-      <div class="batt-bar-track"><div class="batt-bar-fill" id="battBarFill" style="width:0%"></div></div>
-      <div class="batt-hero-sub">State of Charge</div>
+      <div class="batt-hero-sub" id="battHeroLabel">State of Charge</div>
     </div>
     <div class="batt-grid">
       <div class="batt-card">
@@ -467,6 +512,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <input id="navSearchInput" type="text"
         placeholder="Cari tujuan atau paste link Google Maps..."
         oninput="onSearchInput(this.value)"
+        onfocus="onSearchFocus()"
         onkeydown="if(event.key==='Enter')doSearch()">
       <span id="navSearchClear" class="nav-search-clear" onclick="clearSearch()" style="display:none">✕</span>
     </div>
@@ -504,6 +550,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div id="destName" class="dest-name">—</div>
       <div id="destMeta" class="dest-meta">Memuat info rute...</div>
     </div>
+    <button class="dest-fav-btn" id="destFavBtn" onclick="toggleFavorite()" title="Simpan favorit">☆</button>
     <button class="dest-go-btn" onclick="startNavigation()">▶ Mulai</button>
     <button class="dest-close-btn" onclick="clearDestination()">✕</button>
   </div>
@@ -526,6 +573,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <button class="nav-mode-btn active" id="modeDay"       onclick="setMapStyle('day')">☀️</button>
       <button class="nav-mode-btn"        id="modeNight"     onclick="setMapStyle('night')">🌙</button>
       <button class="nav-mode-btn"        id="modeSatellite" onclick="setMapStyle('satellite')">🛰</button>
+      <button class="nav-mode-btn"        id="modeCharging"  onclick="toggleChargingStations()" title="SPKLU terdekat">⚡</button>
     </div>
     <button class="nav-ctrl-btn nav-token-btn" onclick="openSettings()">⚙️ Token</button>
   </div>
@@ -539,9 +587,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     <div class="profile-id" id="profileUUID">SVC: —</div>
   </div>
   <div class="menu-list">
-    <div class="menu-item" onclick="openSettings()"><div class="menu-item-icon">⚙️</div><div class="menu-item-label">Pengaturan UUID & Token</div><div class="menu-chevron">›</div></div>
-    <div class="menu-item" onclick="switchTab('diagnosis',document.querySelectorAll('.tab')[1])"><div class="menu-item-icon">📊</div><div class="menu-item-label">Riwayat Perjalanan</div><div class="menu-chevron">›</div></div>
-    <div class="menu-item"><div class="menu-item-icon">🔋</div><div class="menu-item-label">Stasiun Pengisian</div><div class="menu-chevron">›</div></div>
+    <div class="menu-item" onclick="openSettings()"><div class="menu-item-icon">⚙️</div><div class="menu-item-label">Pengaturan UUID, Token & Energi</div><div class="menu-chevron">›</div></div>
+    <div class="menu-item" onclick="openTripHistory()"><div class="menu-item-icon">📊</div><div class="menu-item-label">Riwayat Perjalanan</div><div class="menu-chevron">›</div></div>
+    <div class="menu-item" onclick="switchTab('navigasi',document.querySelectorAll('.tab')[2]);toggleChargingStations()"><div class="menu-item-icon">🔋</div><div class="menu-item-label">Cari Stasiun Pengisian (SPKLU)</div><div class="menu-chevron">›</div></div>
+    <div class="menu-item" onclick="toggleTheme()"><div class="menu-item-icon">🌓</div><div class="menu-item-label" id="themeToggleLabel">Tema Terang</div><div class="menu-chevron">›</div></div>
     <div class="menu-item"><div class="menu-item-icon">📞</div><div class="menu-item-label">Call Center</div><div class="menu-chevron">›</div></div>
   </div>
 </div>
@@ -554,6 +603,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     <div style="width:24px"></div>
   </div>
   <div class="err-list" id="errList"></div>
+</div>
+
+
+<!-- TRIP HISTORY — fullscreen overlay -->
+<div class="err-screen" id="tripHistScreen">
+  <div class="err-topbar">
+    <div class="err-back" onclick="closeTripHistory()">←</div>
+    <div class="err-title">Riwayat Perjalanan</div>
+    <div style="width:24px"></div>
+  </div>
+  <div class="err-list" id="tripHistList"></div>
 </div>
 
 <!-- MODAL: DEV PIN -->
@@ -609,6 +669,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <input id="inChr" type="text" spellcheck="false" placeholder="0000fff2-0000-1000-8000-00805f9b34fb">
     </div>
     <div class="uuid-tip">💡 <code>FFF1</code> → <code>0000fff1-0000-1000-8000-00805f9b34fb</code></div>
+    <hr class="modal-sep">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔋 Estimasi Energi & Jarak</div>
+    <div class="uuid-field">
+      <label>Kapasitas Baterai (Ah)</label>
+      <input id="inBattCapacity" type="number" step="0.1" inputmode="decimal" placeholder="24">
+    </div>
+    <div class="uuid-field">
+      <label>Referensi Konsumsi (Wh/km)</label>
+      <input id="inRefWhKm" type="number" step="0.1" inputmode="decimal" placeholder="28">
+    </div>
+    <div class="uuid-tip">💡 Sisa Energi (Wh) = Voltase Baterai × Kapasitas (Ah). Estimasi jarak akan otomatis memakai efisiensi <b>real-time</b> trip (Wh/km aktual) bila jarak trip sudah &gt;0.3 km, jika belum memakai nilai referensi di atas.</div>
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeModal('settingsModal')">BATAL</button>
       <button class="modal-btn primary" onclick="saveSettings()">SIMPAN</button>
@@ -623,6 +694,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 let SERVICE_UUID = localStorage.getItem('ble_svc')   || '0000fff1-0000-1000-8000-00805f9b34fb';
 let CHAR_UUID    = localStorage.getItem('ble_chr')   || '0000fff2-0000-1000-8000-00805f9b34fb';
 let MAPBOX_TOKEN = localStorage.getItem('mapbox_tk') || '';
+let BATTERY_CAPACITY_AH = parseFloat(localStorage.getItem('batt_capacity_ah')) || 24;
+let REF_WHKM = parseFloat(localStorage.getItem('ref_wh_km')) || 28;
 
 const PRESETS = [
   {label:'FFF1/FFF2', svc:'0000fff1-0000-1000-8000-00805f9b34fb', chr:'0000fff2-0000-1000-8000-00805f9b34fb'},
@@ -638,6 +711,19 @@ let bleDevice=null, bleChar=null, rxBuffer='', pollTimer=null, isConnected=false
 const POLL_CMDS=['AT+SPD?\r\n','AT+SOC?\r\n','AT+ODO?\r\n','AT+TINV?\r\n','AT+TMOT?\r\n','AT+TBAT?\r\n','AT+SOH?\r\n','AT+VBAT?\r\n','AT+IBAT?\r\n','AT+CBAT?\r\n','AT+ERR?\r\n'];
 const motoData={spd:0,odo:0,soc:0,soh:0,tinv:0,tmot:0,tbat:0,vbat:0,ibat:0,cbat:0,time:'—',errMask:0};
 const speedHistory=new Array(40).fill(0);
+let lowBattNotified=false, errNotified=false;
+
+// ── BROWSER NOTIFICATIONS ──
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+function notify(title, body){
+  if('Notification' in window && Notification.permission==='granted'){
+    try{ new Notification(title, {body, icon:'./icon-192.png'}); }catch(e){}
+  }
+}
 
 // ── ODO PERSISTENCE & SYNC ──
 motoData.odo = parseFloat(localStorage.getItem('app_odo') || '0');
@@ -661,6 +747,12 @@ function handleOdoResponse(motorOdo){
 
 // ── TRIP ──
 let tripStartOdo = localStorage.getItem('trip_start_odo')!==null ? parseFloat(localStorage.getItem('trip_start_odo')) : null;
+let tripEnergyWh   = parseFloat(localStorage.getItem('trip_energy_wh'))   || 0;
+let tripMaxSpeed   = parseFloat(localStorage.getItem('trip_max_speed'))   || 0;
+let tripSpeedSum   = parseFloat(localStorage.getItem('trip_speed_sum'))   || 0;
+let tripSpeedCount = parseFloat(localStorage.getItem('trip_speed_count')) || 0;
+let lastEnergyTs   = null; // timestamp utk integrasi energi (reset tiap koneksi baru)
+
 function updateTripVal(){
   const trip = Math.max(0, motoData.odo - (tripStartOdo??motoData.odo));
   document.getElementById('tripVal').textContent = trip.toFixed(1)+' km';
@@ -668,10 +760,72 @@ function updateTripVal(){
 function updateSpdSub(){
   document.getElementById('spdSub').textContent = `SPD: ${motoData.spd} km/h · ODO: ${motoData.odo} km`;
 }
+
+// ── ENERGY / RANGE ESTIMATION ──
+// Sisa Energi (Wh) = Voltase Baterai (V) x Kapasitas Baterai (Ah)
+// Efisiensi: pakai data aktual trip (Wh/km) jika trip > 0.3km, kalau belum pakai referensi
+function updateRangeEstimate(){
+  if(!motoData.vbat){
+    document.getElementById('energyVal').textContent='— Wh';
+    document.getElementById('rangeVal').textContent='— km';
+    document.getElementById('effVal').textContent='— Wh/km';
+    return;
+  }
+  const energyRemainingWh = motoData.vbat * BATTERY_CAPACITY_AH;
+  const tripDistKm = Math.max(0, motoData.odo - (tripStartOdo??motoData.odo));
+
+  let efficiency, source;
+  if(tripDistKm > 0.3 && tripEnergyWh > 0){
+    efficiency = tripEnergyWh / tripDistKm;
+    source = 'aktual';
+  } else {
+    efficiency = REF_WHKM;
+    source = 'referensi';
+  }
+  const rangeKm = efficiency > 0 ? energyRemainingWh / efficiency : 0;
+
+  document.getElementById('energyVal').textContent = energyRemainingWh.toFixed(0)+' Wh';
+  document.getElementById('rangeVal').textContent   = rangeKm.toFixed(1)+' km';
+  document.getElementById('effVal').textContent     = efficiency.toFixed(1)+' Wh/km ('+source+')';
+}
+
+// ── TRIP HISTORY (localStorage) ──
+const TRIP_HISTORY_KEY = 'trip_history';
+function getTripHistory(){
+  try{ return JSON.parse(localStorage.getItem(TRIP_HISTORY_KEY)||'[]'); }catch(e){ return []; }
+}
+function saveTripToHistory(trip){
+  const hist = getTripHistory();
+  hist.unshift(trip);
+  while(hist.length > 30) hist.pop();
+  localStorage.setItem(TRIP_HISTORY_KEY, JSON.stringify(hist));
+}
+
 function resetTrip(){
+  // Simpan trip yang sedang berjalan ke riwayat (kalau jaraknya cukup signifikan)
+  const dist = Math.max(0, motoData.odo - (tripStartOdo??motoData.odo));
+  if(dist > 0.05){
+    const avgSpd = tripSpeedCount > 0 ? (tripSpeedSum/tripSpeedCount) : 0;
+    const eff = (tripEnergyWh > 0 && dist > 0.3) ? (tripEnergyWh/dist) : null;
+    saveTripToHistory({
+      date: new Date().toISOString(),
+      distance: dist,
+      energyWh: tripEnergyWh,
+      avgSpeed: avgSpd,
+      maxSpeed: tripMaxSpeed,
+      efficiency: eff,
+    });
+  }
+  // Reset semua state trip
   tripStartOdo = motoData.odo;
+  tripEnergyWh = 0; tripMaxSpeed = 0; tripSpeedSum = 0; tripSpeedCount = 0; lastEnergyTs = null;
   localStorage.setItem('trip_start_odo', motoData.odo);
+  localStorage.setItem('trip_energy_wh', 0);
+  localStorage.setItem('trip_max_speed', 0);
+  localStorage.setItem('trip_speed_sum', 0);
+  localStorage.setItem('trip_speed_count', 0);
   updateTripVal();
+  updateRangeEstimate();
   log('Trip direset di ODO '+motoData.odo+' km','sys');
 }
 
@@ -787,6 +941,8 @@ async function connectBLE(){
     log('Notify aktif ✓','sys');
     isConnected=true;
     odoCheckedThisSession=false;
+    lastEnergyTs=null;
+    requestNotifPermission();
     setBtState('connected');
     document.getElementById('lastConn').textContent='Hari ini '+new Date().toTimeString().slice(0,5);
     await sendTimeCmd();
@@ -835,6 +991,13 @@ function parseResponse(raw){
       motoData.spd=num; updateSpeedo(num);
       speedHistory.push(num); speedHistory.shift(); drawChart();
       updateSpdSub();
+      if(num > 0){
+        tripMaxSpeed = Math.max(tripMaxSpeed, num);
+        tripSpeedSum += num; tripSpeedCount++;
+        localStorage.setItem('trip_max_speed', tripMaxSpeed);
+        localStorage.setItem('trip_speed_sum', tripSpeedSum);
+        localStorage.setItem('trip_speed_count', tripSpeedCount);
+      }
       break;
     case 'ODO':
       if(isNaN(num)) return;
@@ -852,8 +1015,16 @@ function parseResponse(raw){
       document.getElementById('socVal').textContent=num+' %';
       document.getElementById('socVal2').textContent=num+' %';
       document.getElementById('battHeroPct').textContent=num+' %';
-      document.getElementById('battBarFill').style.width=Math.min(num,100)+'%';
-      updateBattPower(); break;
+      renderBatteryIcon(num);
+      updateBattPower();
+      // Notifikasi baterai rendah
+      if(num < 15 && !lowBattNotified){
+        notify('🔋 Baterai Rendah', `SOC tersisa ${num}% — segera cas baterai motor.`);
+        lowBattNotified = true;
+      } else if(num >= 25){
+        lowBattNotified = false;
+      }
+      break;
     case 'SOH':
       if(isNaN(num)) return; motoData.soh=num;
       document.getElementById('sohSub').textContent='SOH: '+num+'%';
@@ -872,11 +1043,25 @@ function parseResponse(raw){
     case 'VBAT':
       if(isNaN(num)) return; motoData.vbat=num;
       document.getElementById('vbatVal').textContent=num+' V';
-      updateBattPower(); break;
+      updateBattPower();
+      updateRangeEstimate();
+      break;
     case 'IBAT':
-      if(isNaN(num)) return; motoData.ibat=num;
+      if(isNaN(num)) return;
+      // Integrasi energi terpakai: Energi(Wh) += |V x I| x dt(jam)
+      const nowTs = Date.now();
+      if(lastEnergyTs !== null && motoData.vbat){
+        const dtHour = (nowTs - lastEnergyTs) / 3600000;
+        const powerW = Math.abs(motoData.vbat * num);
+        tripEnergyWh += powerW * dtHour;
+        localStorage.setItem('trip_energy_wh', tripEnergyWh);
+      }
+      lastEnergyTs = nowTs;
+      motoData.ibat = num;
       document.getElementById('ibatVal').textContent=num+' A';
-      updateBattPower(); break;
+      updateBattPower();
+      updateRangeEstimate();
+      break;
     case 'CBAT':
       if(isNaN(num)) return; motoData.cbat=num;
       document.getElementById('cbatVal').textContent=num; break;
@@ -884,6 +1069,13 @@ function parseResponse(raw){
       // Bisa berupa angka bitmask (decimal/hex) atau "0" = tidak ada error
       motoData.errMask = val.toUpperCase().startsWith('0X') ? parseInt(val,16) : (isNaN(num)?0:num);
       renderErrorList();
+      if(motoData.errMask !== 0 && !errNotified){
+        const active = ERROR_DEFS.filter(e=>(motoData.errMask>>e.bit)&1).map(e=>e.label).join(', ');
+        notify('⚠️ Error Terdeteksi', active || 'Periksa Error Status di Diagnosis.');
+        errNotified = true;
+      } else if(motoData.errMask === 0){
+        errNotified = false;
+      }
       break;
     case 'TIME':
       motoData.time=val;
@@ -897,6 +1089,24 @@ function updateBattPower(){
     const p=(motoData.vbat*motoData.ibat).toFixed(0);
     document.getElementById('pbatVal').textContent=p+' W';
   }
+}
+
+// Render icon baterai vertikal: fill sesuai SOC, warna sesuai threshold
+function renderBatteryIcon(pct){
+  pct = Math.max(0, Math.min(100, pct));
+  const totalH = 164; // tinggi area dalam SVG (sesuai rect body)
+  const fillH = (pct/100) * totalH;
+  const rect = document.getElementById('battFillRect');
+  rect.setAttribute('y', 178 - fillH); // 178 = bottom edge (14+164)
+  rect.setAttribute('height', fillH);
+
+  let color, label;
+  if(pct < 20){ color='#ff1744'; label='Baterai Rendah'; }
+  else if(pct < 40){ color='#ffc107'; label='Baterai Sedang'; }
+  else { color='#00e676'; label='State of Charge'; }
+  rect.setAttribute('fill', color);
+  document.getElementById('battHeroLabel').textContent = label;
+  document.getElementById('battHeroPct').style.color = color;
 }
 
 // ── SEND ──
@@ -1384,6 +1594,196 @@ function closeErrorScreen(){
 function showErrorFix(i){
   const e = ERROR_DEFS[i];
   alert(`${e.label}\n\n${e.fix}`);
+}
+
+
+// ═══════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════
+function applyTheme(){
+  const t = localStorage.getItem('theme') || 'dark';
+  document.body.classList.toggle('light', t==='light');
+  const lbl = document.getElementById('themeToggleLabel');
+  if(lbl) lbl.textContent = t==='light' ? 'Tema Gelap' : 'Tema Terang';
+}
+function toggleTheme(){
+  const cur = localStorage.getItem('theme') || 'dark';
+  localStorage.setItem('theme', cur==='light' ? 'dark' : 'light');
+  applyTheme();
+}
+
+// ═══════════════════════════════════════════
+// TRIP HISTORY SCREEN
+// ═══════════════════════════════════════════
+function openTripHistory(){
+  renderTripHistory();
+  document.getElementById('tripHistScreen').classList.add('show');
+}
+function closeTripHistory(){
+  document.getElementById('tripHistScreen').classList.remove('show');
+}
+function renderTripHistory(){
+  const hist = getTripHistory();
+  const el = document.getElementById('tripHistList');
+  if(!hist.length){
+    el.innerHTML = '<div class="empty-state"><div style="font-size:36px;opacity:.3">🛣️</div><div>Belum ada riwayat trip. Trip akan otomatis tersimpan saat kamu menekan Reset di Home.</div></div>';
+    return;
+  }
+  el.innerHTML = hist.map((t,i) => {
+    const d = new Date(t.date);
+    const dateStr = d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="trip-item">
+      <div class="trip-item-hdr">
+        <div class="trip-item-date">${dateStr}</div>
+        <div class="trip-item-share" onclick="shareTrip(${i})">📤 Share</div>
+      </div>
+      <div class="trip-item-dist">${t.distance.toFixed(1)} km</div>
+      <div class="trip-item-grid">
+        <div><span class="trip-item-lbl">Avg</span>${t.avgSpeed.toFixed(0)} km/h</div>
+        <div><span class="trip-item-lbl">Max</span>${t.maxSpeed.toFixed(0)} km/h</div>
+        <div><span class="trip-item-lbl">Energi</span>${t.energyWh.toFixed(0)} Wh</div>
+        <div><span class="trip-item-lbl">Efisiensi</span>${t.efficiency? t.efficiency.toFixed(1)+' Wh/km':'—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SHARE TRIP SUMMARY (generate image card) ──
+async function shareTrip(i){
+  const t = getTripHistory()[i];
+  if(!t) return;
+  const d = new Date(t.date);
+  const W=640, H=420;
+  const canvas = document.createElement('canvas');
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'#0d1117'); grad.addColorStop(1,'#1c2230');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle='#ff3d3d'; ctx.font='bold 26px Arial';
+  ctx.fillText('GESITS  TRIP  SUMMARY', 32, 50);
+
+  ctx.fillStyle='#7a8599'; ctx.font='14px Arial';
+  ctx.fillText(d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}), 32, 76);
+
+  ctx.fillStyle='#00e676'; ctx.font='bold 72px Rajdhani, Arial';
+  ctx.fillText(t.distance.toFixed(1)+' km', 32, 175);
+  ctx.fillStyle='#7a8599'; ctx.font='13px Arial';
+  ctx.fillText('TOTAL JARAK TRIP', 32, 198);
+
+  const rows = [
+    ['Kecepatan Rata-rata', t.avgSpeed.toFixed(0)+' km/h'],
+    ['Kecepatan Maksimum',  t.maxSpeed.toFixed(0)+' km/h'],
+    ['Energi Terpakai',     t.energyWh.toFixed(0)+' Wh'],
+    ['Efisiensi',           t.efficiency? t.efficiency.toFixed(1)+' Wh/km':'—'],
+  ];
+  let y = 250;
+  rows.forEach(r=>{
+    ctx.strokeStyle='#2a3347'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(32,y+18); ctx.lineTo(W-32,y+18); ctx.stroke();
+    ctx.fillStyle='#7a8599'; ctx.font='15px Arial'; ctx.textAlign='left';
+    ctx.fillText(r[0], 32, y);
+    ctx.fillStyle='#e8eaf0'; ctx.font='bold 16px Arial'; ctx.textAlign='right';
+    ctx.fillText(r[1], W-32, y);
+    ctx.textAlign='left';
+    y += 40;
+  });
+
+  ctx.fillStyle='#7a8599'; ctx.font='12px Arial';
+  ctx.fillText('GESITS Dashboard PWA', 32, H-22);
+
+  canvas.toBlob(async (blob)=>{
+    if(!blob) return;
+    const file = new File([blob], 'gesits-trip.png', {type:'image/png'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'GESITS Trip Summary'}); return; }catch(e){}
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='gesits-trip-'+i+'.png'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }, 'image/png');
+}
+
+// ═══════════════════════════════════════════
+// CHARGING STATIONS (SPKLU) via Overpass API
+// ═══════════════════════════════════════════
+let chargingActive=false, chargingMarkers=[];
+function clearChargingMarkers(){
+  chargingMarkers.forEach(m=>m.remove());
+  chargingMarkers=[];
+}
+async function toggleChargingStations(){
+  if(!mapInstance){ showToast('Buka tab Navigasi & atur token Mapbox dulu'); return; }
+  chargingActive = !chargingActive;
+  document.getElementById('modeCharging')?.classList.toggle('active', chargingActive);
+  if(chargingActive){
+    if(userLat===null){ showToast('Menunggu lokasi GPS...'); }
+    else await fetchChargingStations();
+  } else {
+    clearChargingMarkers();
+  }
+}
+async function fetchChargingStations(){
+  if(userLat===null||userLng===null) return;
+  clearChargingMarkers();
+  showToast('🔍 Mencari SPKLU terdekat...');
+  const radius=5000;
+  const query=`[out:json][timeout:15];node(around:${radius},${userLat},${userLng})["amenity"="charging_station"];out;`;
+  try{
+    const res = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:query});
+    const data = await res.json();
+    if(!data.elements || !data.elements.length){
+      showToast('SPKLU tidak ditemukan dalam radius 5km');
+      return;
+    }
+    data.elements.forEach(el=>{
+      const m = new mapboxgl.Marker({element: makeChargingMarkerEl()})
+        .setLngLat([el.lon, el.lat]).addTo(mapInstance);
+      chargingMarkers.push(m);
+    });
+    showToast(`⚡ ${data.elements.length} SPKLU ditemukan`);
+  }catch(e){
+    log('Charging station error: '+e.message,'err');
+    showToast('Gagal memuat data SPKLU');
+  }
+}
+function makeChargingMarkerEl(){
+  const el=document.createElement('div');
+  el.className='charging-marker';
+  el.textContent='⚡';
+  return el;
+}
+
+// ═══════════════════════════════════════════
+// FAVORITE DESTINATIONS
+// ═══════════════════════════════════════════
+function getFavorites(){
+  try{ return JSON.parse(localStorage.getItem('fav_destinations')||'[]'); }catch(e){ return []; }
+}
+function toggleFavorite(){
+  if(destLng===null||destLat===null) return;
+  let favs = getFavorites();
+  const idx = favs.findIndex(f=>Math.abs(f.lng-destLng)<0.0005 && Math.abs(f.lat-destLat)<0.0005);
+  const btn = document.getElementById('destFavBtn');
+  if(idx>=0){
+    favs.splice(idx,1);
+    if(btn) btn.textContent='☆';
+  } else {
+    favs.unshift({label:destLabel, lng:destLng, lat:destLat});
+    while(favs.length>10) favs.pop();
+    if(btn) btn.textContent='⭐';
+  }
+  localStorage.setItem('fav_destinations', JSON.stringify(favs));
+}
+function onSearchFocus(){
+  const val = document.getElementById('navSearchInput').value.trim();
+  if(val) return;
+  const favs = getFavorites();
+  if(!favs.length) return;
+  showSearchResults(favs.map(f=>({label:'⭐ '+f.label, sublabel:'Favorit tersimpan', lng:f.lng, lat:f.lat})));
 }
 
 // ═══════════════════════════════════════════

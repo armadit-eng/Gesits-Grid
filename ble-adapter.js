@@ -1,93 +1,116 @@
 /**
  * BLE Adapter — abstraksi untuk Web Bluetooth (PWA) dan Capacitor BLE (APK)
- * API yang sama, implementasi berbeda tergantung environment
- *
- * Usage:
- *   const ble = await BLEAdapter.create();
- *   await ble.requestDevice();
- *   await ble.connect(deviceId);
- *   await ble.startNotify(serviceUUID, charUUID, callback);
- *   await ble.write(serviceUUID, charUUID, data);
- *   await ble.disconnect();
  */
 
 const BLEAdapter = (() => {
 
-  // Deteksi environment
-  const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  const isCapacitor = !!(window.Capacitor?.isNativePlatform?.());
   const isWebBluetooth = !isCapacitor && !!navigator.bluetooth;
+
+  // ─── CAPACITOR: akses plugin via registerPlugin ───
+  // Capacitor 5+ cara yang benar: Capacitor.registerPlugin
+  function getCapacitorBLEPlugin() {
+    const cap = window.Capacitor;
+    if (!cap) return null;
+
+    // Coba via registerPlugin (Capacitor 5 cara resmi)
+    if (cap.registerPlugin) {
+      return cap.registerPlugin('BluetoothLe', {
+        android: () => import('./node_modules/@capacitor-community/bluetooth-le/dist/esm/index.js')
+          .then(m => m.BleClient).catch(() => null),
+      });
+    }
+    // Fallback: Plugins registry
+    return cap.Plugins?.BluetoothLe || null;
+  }
 
   // ─── CAPACITOR IMPLEMENTATION ───
   class CapacitorBLE {
-    constructor(plugin) {
-      this.ble = plugin;
+    constructor() {
+      this.plugin = null;
       this.deviceId = null;
+      this.deviceName = null;
+      this._disconnectListeners = [];
     }
 
     async initialize() {
-      await this.ble.initialize();
+      // Import BleClient langsung dari module yang sudah di-install
+      // Capacitor sync akan bundle ini ke assets
+      try {
+        // Coba akses via Capacitor global yang di-inject saat build
+        const p = window.Capacitor?.Plugins?.BluetoothLe;
+        if (p) { this.plugin = p; }
+        else throw new Error('fallback');
+      } catch(e) {
+        // Fallback: coba via window global yang mungkin di-expose plugin
+        const p2 = window.BluetoothLe || window.CapacitorBluetoothLe;
+        if (p2) { this.plugin = p2; }
+        else throw new Error('BluetoothLe plugin tidak tersedia. Coba rebuild APK.');
+      }
+      await this.plugin.initialize();
       console.log('[BLE] Capacitor BLE initialized');
     }
 
     async requestDevice(namePrefix, serviceUUIDs) {
-      return new Promise((resolve, reject) => {
-        // Scan semua device, tampilkan list ke user
+      return new Promise(async (resolve, reject) => {
         const found = new Map();
-        this.ble.requestLEScan({
-          services: [],
-          allowDuplicates: false,
-        }).catch(() => {});
+        try {
+          await this.plugin.requestLEScan({ services: [], allowDuplicates: false });
+        } catch(e) { console.warn('scan start:', e); }
 
-        this.ble.addListener('onScanResult', (result) => {
-          if (!found.has(result.device.deviceId)) {
-            found.set(result.device.deviceId, result.device);
-          }
+        const listener = await this.plugin.addListener('onScanResult', (r) => {
+          const id = r?.device?.deviceId;
+          if (id && !found.has(id)) found.set(id, r.device);
         });
 
-        // Stop scan setelah 5 detik, tampilkan picker
         setTimeout(async () => {
-          await this.ble.stopLEScan().catch(() => {});
-          const devices = Array.from(found.values());
-          if (devices.length === 0) { reject(new Error('Tidak ada perangkat BLE ditemukan')); return; }
-          resolve({ devices, _isCapacitor: true });
+          listener?.remove?.();
+          try { await this.plugin.stopLEScan(); } catch(e) {}
+          resolve({ devices: Array.from(found.values()), _isCapacitor: true });
         }, 5000);
       });
     }
 
     async connect(deviceId) {
       this.deviceId = deviceId;
-      await this.ble.connect({ deviceId });
-      console.log('[BLE] Connected to', deviceId);
+      await this.plugin.connect({ deviceId });
+      console.log('[BLE] Connected:', deviceId);
     }
 
     async startNotify(serviceUUID, charUUID, callback) {
-      await this.ble.startNotifications({
+      await this.plugin.startNotifications({
         deviceId: this.deviceId,
         service: serviceUUID,
         characteristic: charUUID,
       });
-      await this.ble.addListener('onBleValueChanged', (result) => {
-        if (result.characteristic.toLowerCase() === charUUID.toLowerCase()) {
-          // result.value adalah base64
-          const raw = atob(result.value);
-          callback(raw);
-        }
+      await this.plugin.addListener('onBleValueChanged', (result) => {
+        if (!result?.characteristic) return;
+        if (result.characteristic.toLowerCase() !== charUUID.toLowerCase()) return;
+        try {
+          // Capacitor BLE returns DataView or base64
+          let text = '';
+          if (typeof result.value === 'string') {
+            text = atob(result.value); // base64
+          } else if (result.value?.buffer) {
+            text = new TextDecoder().decode(result.value); // DataView
+          }
+          if (text) callback(text);
+        } catch(e) { console.warn('notify decode:', e); }
       });
     }
 
     async write(serviceUUID, charUUID, text) {
-      // Encode string ke base64
-      const b64 = btoa(text);
+      // Encode ke base64
+      const b64 = btoa(unescape(encodeURIComponent(text)));
       try {
-        await this.ble.write({
+        await this.plugin.write({
           deviceId: this.deviceId,
           service: serviceUUID,
           characteristic: charUUID,
           value: b64,
         });
       } catch(e) {
-        // fallback writeWithoutResponse
-        await this.ble.writeWithoutResponse({
+        await this.plugin.writeWithoutResponse({
           deviceId: this.deviceId,
           service: serviceUUID,
           characteristic: charUUID,
@@ -98,28 +121,24 @@ const BLEAdapter = (() => {
 
     async disconnect() {
       if (this.deviceId) {
-        await this.ble.disconnect({ deviceId: this.deviceId }).catch(() => {});
+        try { await this.plugin.disconnect({ deviceId: this.deviceId }); } catch(e) {}
         this.deviceId = null;
       }
     }
 
     onDisconnect(callback) {
-      this.ble.addListener('onDisconnected', callback);
+      this.plugin?.addListener('onDisconnected', callback);
     }
 
-    getDeviceName() { return this.deviceId; }
+    getDeviceName() { return this.deviceName || this.deviceId || 'GESITS'; }
   }
 
   // ─── WEB BLUETOOTH IMPLEMENTATION ───
   class WebBLE {
-    constructor() {
-      this.device = null;
-      this.char = null;
-    }
+    constructor() { this.device = null; this.char = null; }
 
     async initialize() {
       if (!navigator.bluetooth) throw new Error('Web Bluetooth tidak didukung');
-      console.log('[BLE] Web Bluetooth ready');
     }
 
     async requestDevice(namePrefix, serviceUUIDs) {
@@ -135,38 +154,31 @@ const BLEAdapter = (() => {
         '6e400003-b5a3-f393-e0a9-e50e24dcca9e',
       ])];
       this.device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: allUUIDs,
+        acceptAllDevices: true, optionalServices: allUUIDs,
       });
       return { device: this.device, _isCapacitor: false };
     }
 
     async connect(deviceOrId, serviceUUID, charUUID) {
-      // deviceOrId = device object dari Web Bluetooth
       if (deviceOrId && typeof deviceOrId === 'object') this.device = deviceOrId;
       const server  = await this.device.gatt.connect();
       const service = await server.getPrimaryService(serviceUUID);
       this.char     = await service.getCharacteristic(charUUID);
-      console.log('[BLE] Web Bluetooth connected:', this.device.name);
     }
 
     async startNotify(serviceUUID, charUUID, callback) {
       if (!this.char) throw new Error('Belum connect');
       await this.char.startNotifications();
       this.char.addEventListener('characteristicvaluechanged', (e) => {
-        const text = new TextDecoder().decode(e.target.value);
-        callback(text);
+        callback(new TextDecoder().decode(e.target.value));
       });
     }
 
     async write(serviceUUID, charUUID, text) {
       if (!this.char) throw new Error('Belum connect');
       const enc = new TextEncoder().encode(text);
-      try {
-        await this.char.writeValue(enc);
-      } catch(e) {
-        await this.char.writeValueWithoutResponse(enc);
-      }
+      try { await this.char.writeValue(enc); }
+      catch(e) { await this.char.writeValueWithoutResponse(enc); }
     }
 
     async disconnect() {
@@ -184,9 +196,8 @@ const BLEAdapter = (() => {
   // ─── FACTORY ───
   async function create() {
     if (isCapacitor) {
-      console.log('[BLE] Mode: Capacitor Native');
-      const { BleClient } = window.CapacitorCommunityBluetoothLe;
-      const adapter = new CapacitorBLE(BleClient);
+      console.log('[BLE] Mode: Capacitor Native Android');
+      const adapter = new CapacitorBLE();
       await adapter.initialize();
       return adapter;
     } else if (isWebBluetooth) {

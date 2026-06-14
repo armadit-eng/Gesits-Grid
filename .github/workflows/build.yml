@@ -52,6 +52,28 @@ jobs:
           cp icon-192.png www/
           cp icon-512.png www/
           cp ble-adapter.js www/
+
+          # Buat bridge script untuk expose BleClient ke window
+          cat > www/ble-plugin-bridge.js << 'BRIDGE'
+// Auto-generated: expose Capacitor BLE plugin ke window
+// Di-load setelah capacitor.js
+(function() {
+  function exposePlugin() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BluetoothLe) {
+      window.BluetoothLe = window.Capacitor.Plugins.BluetoothLe;
+      console.log('[Bridge] BluetoothLe exposed to window.BluetoothLe');
+    } else {
+      setTimeout(exposePlugin, 100); // retry sampai plugin ready
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', exposePlugin);
+  } else {
+    exposePlugin();
+  }
+})();
+BRIDGE
+
           echo "www contents:"
           ls -la www/
 

@@ -41,7 +41,20 @@ jobs:
         run: |
           npx cap add android || echo "Android platform already exists"
 
-      # 7. Sync web assets ke Android project
+      # 7. Siapkan folder www (webDir untuk Capacitor)
+      - name: Prepare www folder
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp manifest.json www/
+          cp sw.js www/
+          cp gesits-motor.png www/
+          cp icon-192.png www/
+          cp icon-512.png www/
+          echo "www contents:"
+          ls -la www/
+
+      # 8. Sync web assets ke Android project
       - name: Sync Capacitor
         run: npx cap sync android
 

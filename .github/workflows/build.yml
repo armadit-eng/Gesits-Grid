@@ -30,7 +30,7 @@ jobs:
 
       # 4. Install dependencies (Capacitor)
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       # 5. Setup Android SDK
       - name: Setup Android SDK
@@ -51,6 +51,7 @@ jobs:
           cp gesits-motor.png www/
           cp icon-192.png www/
           cp icon-512.png www/
+          cp ble-adapter.js www/
           echo "www contents:"
           ls -la www/
 
